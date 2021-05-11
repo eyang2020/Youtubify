@@ -1,7 +1,9 @@
 import os
+import re
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 from googleapiclient.discovery import build
+import youtube_dl
 from pprint import pprint
 
 SPOTIFY_CLIENT_ID = os.environ['SPOTIFY_CLIENT_ID']
@@ -18,6 +20,11 @@ sp = spotipy.Spotify (
 )
 
 youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
+ydl = youtube_dl.YoutubeDL(
+    {
+        'quiet': True
+    }
+)
 
 # spotify
 def getTracksByArtist(artist_name):
@@ -58,10 +65,11 @@ def getTracksInPlaylist(playlist_id):
             print(track['name'] + ' - ' + track['artists'][0]['name'])
 
 # spotify
-def getTrackId(track_name):
-    result = sp.search(q=track_name, type="track", limit=1, offset=0, market='US')
+def getTrackId(query):
+    result = sp.search(q=query, type="track", limit=1, offset=0, market='US')
     if result['tracks']['items']:
-        print(f"track id: {result['tracks']['items'][0]['id']}")
+        return result['tracks']['items'][0]['id']
+    return -1
 
 # youtube
 def getYoutubeVideo(keyword):
@@ -78,6 +86,7 @@ def getYoutubeVideo(keyword):
         print(item['snippet'])
 
 # youtube
+# todo: add oauth2
 def createYoutubePlaylist():
     request = youtube.playlists().insert(
         part="snippet,status",
@@ -103,14 +112,13 @@ def createYoutubePlaylist():
 # youtube
 def parseYoutubePlaylist(playlist_id):
     # given the playlist id of a youtube playlist
-    # returns a list of song/video titles
+    # returns a list of corresponding track ids on spotify
     request = youtube.playlistItems().list(
         part='snippet',
         playlistId=playlist_id,
         maxResults=50
     )
     response = request.execute()
-
     # get first batch
     playlistItems = response['items']
     nextPageToken = response.get('nextPageToken')
@@ -125,22 +133,45 @@ def parseYoutubePlaylist(playlist_id):
         playlistItems.extend(response['items'])
         nextPageToken = response.get('nextPageToken')
 
-    titles = []
+    foundTrackIds = []
 
     idx = 1
     for item in playlistItems:
-        #print(f"{idx}. {item['snippet']['title']}")
-        titles.append(item['snippet']['title'])
+        #print(item['snippet'])
+        videoTitle = item['snippet']['title']
+        if videoTitle == 'Private video' or videoTitle == 'Deleted video': continue
+        videoId = item['snippet']['resourceId']['videoId']
+        videoUrl = f'http://www.youtube.com/watch?v={videoId}'
+        print(f'{idx}. {videoTitle}')
+        #print(videoUrl)
+
+        with ydl: video = ydl.extract_info(videoUrl, download=False)
+        try: 
+            videoArtist = video['artist']
+            videoTrack = video['track']
+            #print('artist: {}\ntrack: {}'.format(videoArtist, videoTrack))
+            # clean this into a spotify search query: remove any delimiters
+            videoArtist = ' '.join(w for w in re.split(r"\W", videoArtist) if w)
+            videoTrack = ' '.join(w for w in re.split(r"\W", videoTrack) if w)
+            print('artist: {}\ntrack: {}'.format(videoArtist, videoTrack))
+            # search for this track on spotify
+            trackId = getTrackId(videoArtist + ' ' + videoTrack)
+            if trackId != -1: foundTrackIds.append(trackId)
+        except KeyError:
+            # this video does not have the 'Music in this video' attribute
+            # have to go off title
+            print('Error: "music in this video" attribute not found.')
         idx += 1
 
-    return titles
+    return foundTrackIds
 
 # playground
 print("Running tests...")
-titles = parseYoutubePlaylist('PLwUNvBOxUWrGnpvKYuK8R1CxXbSBSfa4n')
-for title in titles:
-    print(title)
-    getTrackId(title)
+foundTrackIds = parseYoutubePlaylist('PLwUNvBOxUWrEN6YKebfVELXzQ-JxLhY4Y')
+for trackId in foundTrackIds:
+    # add track ids to a playlist in spotify
+    #print(f'trackId: {trackId}')
+    print(f'https://open.spotify.com/track/{trackId}')
 
 # notes
 # https://github.com/plamere/spotipy/blob/master/examples/create_playlist.py

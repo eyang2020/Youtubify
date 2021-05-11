@@ -5,6 +5,7 @@ from spotipy.oauth2 import SpotifyClientCredentials
 from googleapiclient.discovery import build
 import youtube_dl
 from pprint import pprint
+import time
 
 SPOTIFY_CLIENT_ID = os.environ['SPOTIFY_CLIENT_ID']
 SPOTIFY_CLIENT_SECRET = os.environ['SPOTIFY_CLIENT_SECRET']
@@ -22,7 +23,8 @@ sp = spotipy.Spotify (
 youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
 ydl = youtube_dl.YoutubeDL(
     {
-        'quiet': True
+        'quiet': True,
+        'ignoreerrors': True
     }
 )
 
@@ -66,9 +68,11 @@ def getTracksInPlaylist(playlist_id):
 
 # spotify
 def getTrackId(query):
-    result = sp.search(q=query, type="track", limit=1, offset=0, market='US')
-    if result['tracks']['items']:
-        return result['tracks']['items'][0]['id']
+    markets = ['US', 'JP', 'CN']
+    for market in markets:
+        result = sp.search(q=query, type="track", limit=1, offset=0, market=market)
+        if result['tracks']['items']:
+            return result['tracks']['items'][0]['id']
     return -1
 
 # youtube
@@ -116,7 +120,7 @@ def parseYoutubePlaylist(playlist_id):
     request = youtube.playlistItems().list(
         part='snippet',
         playlistId=playlist_id,
-        maxResults=50
+        maxResults=50,
     )
     response = request.execute()
     # get first batch
@@ -127,7 +131,7 @@ def parseYoutubePlaylist(playlist_id):
             part='snippet',
             playlistId=playlist_id,
             maxResults=50,
-            pageToken=nextPageToken
+            pageToken=nextPageToken,
         )
         response = request.execute()
         playlistItems.extend(response['items'])
@@ -140,38 +144,53 @@ def parseYoutubePlaylist(playlist_id):
         #print(item['snippet'])
         videoTitle = item['snippet']['title']
         if videoTitle == 'Private video' or videoTitle == 'Deleted video': continue
+        #todo: deal with unavailable videos / region blocked
         videoId = item['snippet']['resourceId']['videoId']
         videoUrl = f'http://www.youtube.com/watch?v={videoId}'
         print(f'{idx}. {videoTitle}')
         #print(videoUrl)
-
-        with ydl: video = ydl.extract_info(videoUrl, download=False)
-        try: 
-            videoArtist = video['artist']
-            videoTrack = video['track']
-            #print('artist: {}\ntrack: {}'.format(videoArtist, videoTrack))
-            # clean this into a spotify search query: remove any delimiters
-            videoArtist = ' '.join(w for w in re.split(r"\W", videoArtist) if w)
-            videoTrack = ' '.join(w for w in re.split(r"\W", videoTrack) if w)
-            print('artist: {}\ntrack: {}'.format(videoArtist, videoTrack))
-            # search for this track on spotify
-            trackId = getTrackId(videoArtist + ' ' + videoTrack)
-            if trackId != -1: foundTrackIds.append(trackId)
-        except KeyError:
-            # this video does not have the 'Music in this video' attribute
-            # have to go off title
-            print('Error: "music in this video" attribute not found.')
-        idx += 1
-
+        try:
+            with ydl: video = ydl.extract_info(videoUrl, download=False)
+            try: 
+                videoArtist = video['artist']
+                videoTrack = video['track']
+                #print('artist: {}\ntrack: {}'.format(videoArtist, videoTrack))
+                # clean this into a spotify search query: remove any delimiters
+                videoArtist = ' '.join(w for w in re.split(r"\W", videoArtist) if w)
+                videoTrack = ' '.join(w for w in re.split(r"\W", videoTrack) if w)
+                #print('artist: {} | track: {}'.format(videoArtist, videoTrack))
+                # search for this track on spotify
+                trackId = getTrackId(videoArtist + ' ' + videoTrack)
+                if trackId != -1: 
+                    foundTrackIds.append(trackId)
+                    print(f'{idx}. https://open.spotify.com/track/{trackId}')
+            except KeyError:
+                #print('Error: "music in this video" attribute not found.')
+                # remove delims and the word "MV"
+                videoTitle = ' '.join(w for w in re.split(r"\W", videoTitle) if w)
+                videoTitle = videoTitle.replace('MV', '')
+                #print(f'Cleaned title: {videoTitle}')
+                # search for this track on spotify
+                trackId = getTrackId(videoTitle)
+                if trackId != -1: 
+                    foundTrackIds.append(trackId)
+                    print(f'{idx}. https://open.spotify.com/track/{trackId}')
+            idx += 1
+            time.sleep(1)
+        except Exception as e:
+            #print(e)
+            pass
     return foundTrackIds
 
 # playground
 print("Running tests...")
 foundTrackIds = parseYoutubePlaylist('PLwUNvBOxUWrEN6YKebfVELXzQ-JxLhY4Y')
+idx = 1
 for trackId in foundTrackIds:
     # add track ids to a playlist in spotify
     #print(f'trackId: {trackId}')
-    print(f'https://open.spotify.com/track/{trackId}')
+    print(f'{idx}. https://open.spotify.com/track/{trackId}')
+    idx += 1
 
 # notes
 # https://github.com/plamere/spotipy/blob/master/examples/create_playlist.py

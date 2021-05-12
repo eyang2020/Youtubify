@@ -68,7 +68,7 @@ def getTracksInPlaylist(playlist_id):
 
 # spotify
 def getTrackId(query):
-    markets = ['US', 'JP', 'CN']
+    markets = ['US', 'JP']
     for market in markets:
         result = sp.search(q=query, type="track", limit=1, offset=0, market=market)
         if result['tracks']['items']:
@@ -120,7 +120,7 @@ def parseYoutubePlaylist(playlist_id):
     request = youtube.playlistItems().list(
         part='snippet',
         playlistId=playlist_id,
-        maxResults=50,
+        maxResults=50
     )
     response = request.execute()
     # get first batch
@@ -131,7 +131,7 @@ def parseYoutubePlaylist(playlist_id):
             part='snippet',
             playlistId=playlist_id,
             maxResults=50,
-            pageToken=nextPageToken,
+            pageToken=nextPageToken
         )
         response = request.execute()
         playlistItems.extend(response['items'])
@@ -157,18 +157,28 @@ def parseYoutubePlaylist(playlist_id):
                 #print('artist: {}\ntrack: {}'.format(videoArtist, videoTrack))
                 # clean this into a spotify search query: remove any delimiters
                 videoArtist = ' '.join(w for w in re.split(r"\W", videoArtist) if w)
+                videoArtist = videoArtist.lower()
+                # remove the words "ft", "ft."
+                videoArtist = videoArtist.replace('ft', '')
+                videoArtist = videoArtist.replace('ft.', '')
                 videoTrack = ' '.join(w for w in re.split(r"\W", videoTrack) if w)
                 #print('artist: {} | track: {}'.format(videoArtist, videoTrack))
                 # search for this track on spotify
-                trackId = getTrackId(videoArtist + ' ' + videoTrack)
+                query = videoArtist + ' ' + videoTrack
+                #print(f'query: {query}')
+                trackId = getTrackId(query)
                 if trackId != -1: 
                     foundTrackIds.append(trackId)
                     print(f'{idx}. https://open.spotify.com/track/{trackId}')
             except KeyError:
                 #print('Error: "music in this video" attribute not found.')
-                # remove delims and the word "MV"
+                # make each character lowercase
+                # remove delims the words "mv", "ft", "ft." 
                 videoTitle = ' '.join(w for w in re.split(r"\W", videoTitle) if w)
-                videoTitle = videoTitle.replace('MV', '')
+                videoTitle = videoTitle.lower()
+                videoTitle = videoTitle.replace('mv', '')
+                videoTitle = videoTitle.replace('ft', '')
+                videoTitle = videoTitle.replace('ft.', '')
                 #print(f'Cleaned title: {videoTitle}')
                 # search for this track on spotify
                 trackId = getTrackId(videoTitle)
@@ -184,7 +194,7 @@ def parseYoutubePlaylist(playlist_id):
 
 # playground
 print("Running tests...")
-foundTrackIds = parseYoutubePlaylist('PLwUNvBOxUWrEN6YKebfVELXzQ-JxLhY4Y')
+foundTrackIds = parseYoutubePlaylist('PLwUNvBOxUWrGmsycbYT7PmpAKV6EhvdXj')
 idx = 1
 for trackId in foundTrackIds:
     # add track ids to a playlist in spotify

@@ -115,6 +115,17 @@ def createYoutubePlaylist():
 # make sure playlist is public/unlisted
 # youtube
 def parseYoutubePlaylist(playlist_id):
+    # get playlist title
+    request = youtube.playlists().list(
+        part='snippet, contentDetails',
+        id=playlist_id,
+    )
+    response = request.execute()
+    playlistTitle = response['items'][0]['snippet']['title']
+    playlistVideoCnt = response['items'][0]['contentDetails']['itemCount']
+    # todo: add limit to videos in playlist. maybe 100-500.
+    print(f'Playlist Title: {playlistTitle}')
+    print(f'Video count: {playlistVideoCnt}')
     # given the playlist id of a youtube playlist
     # returns a list of corresponding track ids on spotify
     request = youtube.playlistItems().list(
@@ -204,8 +215,8 @@ for trackId in foundTrackIds:
 
 # notes
 # https://github.com/plamere/spotipy/blob/master/examples/create_playlist.py
-# creates a playlist, deletes it after 24 hours?
-# https://www.youtube.com/watch?v=86YgnJMDrfk
 # error handling: check if youtube video is private, or spotify song is greyed-out
 # https://developers.google.com/youtube/v3/code_samples/code_snippets?apix=true
 # first work on youtube -> spotify
+# spotify playlist name can be 100 chars (including spaces)
+# youtube playlist name can be ? chars (including spaces)

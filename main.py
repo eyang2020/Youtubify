@@ -4,19 +4,18 @@ import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 from googleapiclient.discovery import build
 import youtube_dl
-from pprint import pprint
 import time
 
-SPOTIFY_CLIENT_ID = os.environ['SPOTIFY_CLIENT_ID']
-SPOTIFY_CLIENT_SECRET = os.environ['SPOTIFY_CLIENT_SECRET']
+SPOTIPY_CLIENT_ID = os.environ['SPOTIPY_CLIENT_ID']
+SPOTIPY_CLIENT_SECRET = os.environ['SPOTIPY_CLIENT_SECRET']
 YOUTUBE_API_KEY = os.environ['YOUTUBE_API_KEY']
 #CLIENT_SECRET_FILE = 'client_secret.json'
 #SCOPES = ['https://www.googleapis.com/auth/youtube']
 
 sp = spotipy.Spotify (
     auth_manager=SpotifyClientCredentials (
-        client_id=SPOTIFY_CLIENT_ID,
-        client_secret=SPOTIFY_CLIENT_SECRET
+        client_id=SPOTIPY_CLIENT_ID,
+        client_secret=SPOTIPY_CLIENT_SECRET
     )
 )
 
@@ -89,7 +88,7 @@ def clean(s):
     s = ' '.join(w for w in re.split(r'\W', s) if w)
     s = s.lower()
     # remove any whole keywords
-    keywords = ['mv', 'ft', 'ft.', 'feat', 'feat.']
+    keywords = ['mv', 'music video', 'ft', 'ft.', 'feat', 'feat.']
     pat = re.compile(r'\b(?:{})\b'.format('|'.join(keywords)))
     return pat.sub('', s)
 
@@ -135,7 +134,7 @@ def parseYoutubePlaylist(playlist_id):
 
     idx = 1
     for item in playlistItems:
-        #todo: change playlistItems to already contain the videoId of non private/deleted videos
+        #todo: change playlistItems to already contain the videoId and title of non private/deleted videos
         videoTitle = item['snippet']['title']
         if videoTitle == 'Private video' or videoTitle == 'Deleted video': continue
         #todo: deal with unavailable videos / region blocked
@@ -149,13 +148,15 @@ def parseYoutubePlaylist(playlist_id):
                 videoTrack = clean(video['track'])
                 # search for this track on spotify
                 query = videoArtist + ' ' + videoTrack
+                print(f'query: {query}')
                 trackId = getTrackId(query)
-                if trackId != -1: 
+                if trackId != -1:
                     foundTrackIds.append(trackId)
                     print(f'{idx}. https://open.spotify.com/track/{trackId}')
             except KeyError:
                 # must use video title
                 videoTitle = clean(videoTitle)
+                print(f'cleaned title: {videoTitle}')
                 # search for this track on spotify
                 trackId = getTrackId(videoTitle)
                 if trackId != -1: 
@@ -164,11 +165,12 @@ def parseYoutubePlaylist(playlist_id):
             idx += 1
             time.sleep(1)
         except Exception as e:
-            print(e)
+            #print(e)
             pass
-    return foundTrackIds
+    return (playlistTitle, foundTrackIds)
 
 # playground
+'''
 print('Running tests...')
 foundTrackIds = parseYoutubePlaylist('PLwUNvBOxUWrEQNZTv-uCCC5ngUw2YIEn-')
 idx = 1
@@ -177,8 +179,10 @@ for trackId in foundTrackIds:
     #print(f'trackId: {trackId}')
     print(f'{idx}. https://open.spotify.com/track/{trackId}')
     idx += 1
+'''
 
 # error handling: check if youtube video is private, or spotify song is greyed-out
 # first work on youtube -> spotify
 # spotify playlist name can be 100 chars (including spaces)
 # youtube playlist name can be ? chars (including spaces)
+# todo: make a Video class with attributes: title, id. url can be derived from id.

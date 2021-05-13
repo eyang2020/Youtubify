@@ -29,12 +29,6 @@ ydl = youtube_dl.YoutubeDL(
 )
 
 # spotify
-def getTracksByArtist(artist_name):
-    results = sp.search(q=artist_name, limit=10)
-    for idx, track in enumerate(results['tracks']['items']):
-        print(idx, track['name'])
-
-# spotify
 def getTracksInPlaylist(playlist_id):
     #Example: get the track id's of all tracks in a playlist of id spotify:playlist:{playlist-id}
     pl_id = f'spotify:playlist:{playlist_id}'
@@ -89,33 +83,22 @@ def getYoutubeVideo(keyword):
     for item in response['items']:
         print(item['snippet'])
 
-# youtube
-# todo: add oauth2
-def createYoutubePlaylist():
-    request = youtube.playlists().insert(
-        part="snippet,status",
-        body={
-            "snippet": {
-            "title": "Sample playlist created via API",
-            "description": "This is a sample playlist description.",
-            "tags": [
-                "sample playlist",
-                "API call"
-            ],
-            "defaultLanguage": "en"
-            },
-            "status": {
-            "privacyStatus": "public"
-            }
-        }
-    )
-    response = request.execute()
-    pprint(response)
+def clean(s):
+    # clean a string 's' into a spotify search query
+    # remove nonalpha chars
+    s = ' '.join(w for w in re.split(r'\W', s) if w)
+    s = s.lower()
+    # remove any whole keywords
+    keywords = ['mv', 'ft', 'ft.', 'feat', 'feat.']
+    pat = re.compile(r'\b(?:{})\b'.format('|'.join(keywords)))
+    return pat.sub('', s)
 
 # make sure playlist is public/unlisted
 # youtube
 def parseYoutubePlaylist(playlist_id):
-    # get playlist title
+    # given the playlist id of a youtube playlist
+    # returns a list of corresponding track ids on spotify
+    # get playlist title, playlist size (# of videos)
     request = youtube.playlists().list(
         part='snippet, contentDetails',
         id=playlist_id,
@@ -123,11 +106,11 @@ def parseYoutubePlaylist(playlist_id):
     response = request.execute()
     playlistTitle = response['items'][0]['snippet']['title']
     playlistVideoCnt = response['items'][0]['contentDetails']['itemCount']
-    # todo: add limit to videos in playlist. maybe 100-500.
     print(f'Playlist Title: {playlistTitle}')
     print(f'Video count: {playlistVideoCnt}')
-    # given the playlist id of a youtube playlist
-    # returns a list of corresponding track ids on spotify
+    # limit playlist size to 500 videos.
+    if playlistVideoCnt > 500:
+        return -1
     request = youtube.playlistItems().list(
         part='snippet',
         playlistId=playlist_id,
@@ -152,45 +135,27 @@ def parseYoutubePlaylist(playlist_id):
 
     idx = 1
     for item in playlistItems:
-        #print(item['snippet'])
+        #todo: change playlistItems to already contain the videoId of non private/deleted videos
         videoTitle = item['snippet']['title']
         if videoTitle == 'Private video' or videoTitle == 'Deleted video': continue
         #todo: deal with unavailable videos / region blocked
         videoId = item['snippet']['resourceId']['videoId']
         videoUrl = f'http://www.youtube.com/watch?v={videoId}'
         print(f'{idx}. {videoTitle}')
-        #print(videoUrl)
         try:
             with ydl: video = ydl.extract_info(videoUrl, download=False)
             try: 
-                videoArtist = video['artist']
-                videoTrack = video['track']
-                #print('artist: {}\ntrack: {}'.format(videoArtist, videoTrack))
-                # clean this into a spotify search query: remove any delimiters
-                videoArtist = ' '.join(w for w in re.split(r"\W", videoArtist) if w)
-                videoArtist = videoArtist.lower()
-                # remove the words "ft", "ft."
-                videoArtist = videoArtist.replace('ft', '')
-                videoArtist = videoArtist.replace('ft.', '')
-                videoTrack = ' '.join(w for w in re.split(r"\W", videoTrack) if w)
-                #print('artist: {} | track: {}'.format(videoArtist, videoTrack))
+                videoArtist = clean(video['artist'])
+                videoTrack = clean(video['track'])
                 # search for this track on spotify
                 query = videoArtist + ' ' + videoTrack
-                #print(f'query: {query}')
                 trackId = getTrackId(query)
                 if trackId != -1: 
                     foundTrackIds.append(trackId)
                     print(f'{idx}. https://open.spotify.com/track/{trackId}')
             except KeyError:
-                #print('Error: "music in this video" attribute not found.')
-                # make each character lowercase
-                # remove delims the words "mv", "ft", "ft." 
-                videoTitle = ' '.join(w for w in re.split(r"\W", videoTitle) if w)
-                videoTitle = videoTitle.lower()
-                videoTitle = videoTitle.replace('mv', '')
-                videoTitle = videoTitle.replace('ft', '')
-                videoTitle = videoTitle.replace('ft.', '')
-                #print(f'Cleaned title: {videoTitle}')
+                # must use video title
+                videoTitle = clean(videoTitle)
                 # search for this track on spotify
                 trackId = getTrackId(videoTitle)
                 if trackId != -1: 
@@ -199,13 +164,13 @@ def parseYoutubePlaylist(playlist_id):
             idx += 1
             time.sleep(1)
         except Exception as e:
-            #print(e)
+            print(e)
             pass
     return foundTrackIds
 
 # playground
-print("Running tests...")
-foundTrackIds = parseYoutubePlaylist('PLwUNvBOxUWrGmsycbYT7PmpAKV6EhvdXj')
+print('Running tests...')
+foundTrackIds = parseYoutubePlaylist('PLwUNvBOxUWrEQNZTv-uCCC5ngUw2YIEn-')
 idx = 1
 for trackId in foundTrackIds:
     # add track ids to a playlist in spotify
@@ -213,10 +178,7 @@ for trackId in foundTrackIds:
     print(f'{idx}. https://open.spotify.com/track/{trackId}')
     idx += 1
 
-# notes
-# https://github.com/plamere/spotipy/blob/master/examples/create_playlist.py
 # error handling: check if youtube video is private, or spotify song is greyed-out
-# https://developers.google.com/youtube/v3/code_samples/code_snippets?apix=true
 # first work on youtube -> spotify
 # spotify playlist name can be 100 chars (including spaces)
 # youtube playlist name can be ? chars (including spaces)

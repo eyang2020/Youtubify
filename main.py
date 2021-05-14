@@ -169,18 +169,6 @@ def parseYoutubePlaylist(playlist_id):
             pass
     return (playlistTitle, foundTrackIds)
 
-# playground
-'''
-print('Running tests...')
-foundTrackIds = parseYoutubePlaylist('PLwUNvBOxUWrEQNZTv-uCCC5ngUw2YIEn-')
-idx = 1
-for trackId in foundTrackIds:
-    # add track ids to a playlist in spotify
-    #print(f'trackId: {trackId}')
-    print(f'{idx}. https://open.spotify.com/track/{trackId}')
-    idx += 1
-'''
-
 # error handling: check if youtube video is private, or spotify song is greyed-out
 # first work on youtube -> spotify
 # spotify playlist name can be 100 chars (including spaces)

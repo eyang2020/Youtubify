@@ -1,0 +1,6 @@
+spotipy
+google-api-python-client
+youtube_dl
+Flask
+Flask-Session
+Flask-Executor

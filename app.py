@@ -4,7 +4,7 @@ from flask_session import Session
 from flask_executor import Executor
 import spotipy
 import uuid
-from main import parseYoutubePlaylist
+from runner import run
 
 app = Flask(__name__)
 executor = Executor(app)
@@ -71,22 +71,7 @@ def getYouTubePlaylistUrl():
     # POST request
     ytPlaylistUrl = request.form['playlist_url_textbox']
     ytPlaylistId = ytPlaylistUrl.split('list=')[1]
-    def createPlaylist():
-        print('Task started.')
-        playlistTitle, trackIds = parseYoutubePlaylist(ytPlaylistId)
-        # create the spotify playlist
-        spUserId = sp.me()['id']
-        spPlaylist = sp.user_playlist_create(
-            user=spUserId, 
-            name=playlistTitle, 
-            public=False, 
-            collaborative=False,
-            description=f'A collection of songs from the YouTube playlist {playlistTitle}.'
-        )
-        # add tracks to created playlist
-        sp.user_playlist_add_tracks(spUserId, spPlaylist['id'], trackIds)
-    # add task to background
-    executor.submit(createPlaylist)
+    executor.submit(run, ytPlaylistId, sp)
     # send GET request to render loading.html
     return redirect(url_for('getYouTubePlaylistUrl'))
 

@@ -32,5 +32,3 @@ def run(playlist_id, sp_user_client):
     )
     # add tracks to created playlist
     sp_user_client.user_playlist_add_tracks(sp_user_client.me()['id'], sp_playlist['id'], tracks)
-
-    

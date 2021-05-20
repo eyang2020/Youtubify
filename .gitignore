@@ -1,0 +1,5 @@
+.vscode/
+.spotify_caches/
+__pycache__/
+.flask_session/
+venv/

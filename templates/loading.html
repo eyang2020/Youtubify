@@ -1,9 +1,17 @@
-<html>
-    <head>
-        <title>Youtubify</title>
-    </head>
-    <body>
+{%extends "base.html"%}
+    {%block title%}Youtubify{%endblock%}
+    {%block style%}
+    <style>
+    body{
+        margin:0px;
+        padding:0px;
+        height:100vh;
+        background-size:cover;
+    background: linear-gradient(45deg,#23272A 20%,transparent), url(https://media.tenor.com/images/6d293286921087d6df842fde1a3fb456/tenor.gif);
+    }
+</style>
+    {%endblock%}
+    {%block content%}
         <h2>Converting your playlist, please wait...</h2>
-        <img src="https://steamuserimages-a.akamaihd.net/ugc/786373405538783388/099A4A56DA18FCD3952753ADD7D584EFA67D53D0/" alt="Nyanpasu Gif"  width="250" />
-    </body>
-</html>
+        <img src="https://media1.tenor.com/images/4752f2a8fc5db930ffcec3f3f3b6d4fe/tenor.gif?itemid=14800724" alt="Kanna Loading Gif"  width="550" />
+    {%endblock%}

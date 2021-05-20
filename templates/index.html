@@ -1,16 +1,45 @@
-<html>
-    <head>
-        <title>Youtubify</title>
-        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
-    </head>
-    <body>
+{%extends "base.html"%}
+
+        {%block title%}Youtubify{%endblock%}
+        {%block style%}
+        <style>
+        .signout{ 
+            position:fixed;
+            right:15px;
+            top:15px;
+            color:#23272A; 
+            font-size:20px;}
+
+        .url{
+            margin-top:20px;
+            border:3px solid ;
+            width:fit-content;
+            width:-webkit-fit-content; 
+            width:-moz-fit-content;
+            margin-left:auto;
+            margin-right:auto;
+        }
+        
+        .submit{
+            margin-right:5px
+        }
+
+        
+        </style>
+   {%endblock%}
+        {%block scirpt%}<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>{%endblock%}
+        {%block signout%} <a class="signout" href="/sign_out"><b>Sign Out</b></a> {%endblock%}
+    {%block content%}
         <h2>
-            Hi {{username}} <small><a href="/sign_out">[sign out]<a/></small>
+            Hi {{username}} 
         </h2>
         <img src="https://avatarfiles.alphacoders.com/108/108675.gif" alt="Kana Gif"  width="250" />
-        <form action="post_playlist_url" method="POST">
-            <input name="playlist_url_textbox">
-            <input type="submit" onclick="$('#loading').show();">
-        </form>
-    </body>
-</html>
+
+        <h4 style=" margin-top:15px;">Please insert playlist URL</h4>
+            <form class="url" action="post_playlist_url" method="POST">
+                <input style="margin:5px"name="playlist_url_textbox">
+                <input class="submit" type="submit" onclick="$('#loading').show();">
+            </form>
+
+    {%endblock%}
+

@@ -1,9 +1,82 @@
-<html>
-    <head>
-        <title>Youtubify</title>
-    </head>
-    <body>
-        <img src="https://media1.giphy.com/media/a6pzK009rlCak/200.gif" alt="Chunnibyo Gif" width="250"/>
-        <h2><a href={{auth_url}}>Sign in</a></h2>
-    </body>
-</html>
+{%extends "base.html"%}
+   {%block title%}Youtubify{%endblock%}
+   {% block style %} 
+   <style>
+        div.top{
+            display: flex;
+        align-items:center;
+        justify-content: center;
+        margin-top:10%;
+        margin-bottom:5%;
+        }
+        #youtube{
+            margin-right:1em;
+        }
+        #arrows{
+            margin-left:1em;
+            margin-right:1em;
+        }
+        #spotify{
+            margin-left:1em;
+        }
+        div.bottom{
+            display: flex;
+        flex-direction: column;
+        align-items:center;
+        justify-content: center;
+        }
+       button{ 
+
+  box-sizing: border-box;
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none;
+  background-color: transparent;
+  border: 2px solid;
+  border-radius: 0.6em;
+  cursor: pointer;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-self: center;
+      -ms-flex-item-align: center;
+          align-self: center;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1;
+  margin: 20px;
+  padding: 1.2em 2.8em;
+}
+button:hover, button:focus {
+  color: #fff;
+  outline: 0;
+}
+.signin {
+  border-color: #1DB954;
+  color: #fff;
+  box-shadow: 0 0 40px 40px #1DB954 inset, 0 0 0 0 #1DB954;
+  -webkit-transition: all 150ms ease-in-out;
+  transition: all 150ms ease-in-out;
+}
+.signin:hover {
+  box-shadow: 0 0 10px 0 #1DB954 inset, 0 0 10px 4px #1DB954;
+}
+    </style>
+{%endblock%}
+    {%block content%}
+    <div class = "top">
+        <img id="youtube" style=" height:110px; width:110px;" src="{{url_for('static', filename='yt_icon_rgb.png')}}"/>
+        <img id="arrows" style=" height:110px; width:110px;" src="{{url_for('static', filename='Arrows.png')}}"/>
+        <img id="spotify" style=" height:110px; width:110px;" src="{{url_for('static', filename='SpotifyIcon.png')}}"/>
+    </div>
+    <div class = "bottom">
+        <h2 style="color:#1DB954;">Transfer Your Favorite Playlists</h2>
+        
+        <button class="signin"><a href="{{auth_url}}" style="text-decoration: none;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700; color: #fff;">Sign In</a></button>
+
+    </div>
+    {%endblock%}
+

@@ -81,6 +81,7 @@ class YoutubeClient:
                 title = item['snippet']['title']
                 if title == 'Private video' or title == 'Deleted video':
                     continue
+                title = self.clean(title)
                 videoId = item['snippet']['resourceId']['videoId']
                 try:
                     artist, track = self.getArtistAndTrackFromVideo(videoId)

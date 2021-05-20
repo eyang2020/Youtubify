@@ -25,7 +25,8 @@ class YoutubeClient:
         self.yt = build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
         self.ydl = youtube_dl.YoutubeDL ({
             'quiet': True,
-            'ignoreerrors': True
+            'ignoreerrors': True#,
+            #'source_address': '0.0.0.0'
         })
 
     @staticmethod
@@ -35,7 +36,16 @@ class YoutubeClient:
         s = ' '.join(w for w in re.split(r'\W', s) if w)
         s = s.lower()
         # remove any whole keywords
-        keywords = ['mv', 'music video', 'ft', 'ft.', 'feat', 'feat.']
+        keywords = [
+            'mv', 
+            'music video', 
+            'ft', 
+            'ft.', 
+            'feat', 
+            'feat.',
+            'official video',
+            'official music video',
+        ]
         pat = re.compile(r'\b(?:{})\b'.format('|'.join(keywords)))
         return pat.sub('', s)
 
@@ -71,6 +81,7 @@ class YoutubeClient:
                 title = item['snippet']['title']
                 if title == 'Private video' or title == 'Deleted video':
                     continue
+                title = self.clean(title)
                 videoId = item['snippet']['resourceId']['videoId']
                 try:
                     artist, track = self.getArtistAndTrackFromVideo(videoId)

@@ -44,14 +44,15 @@
         {%block scirpt%}<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>{%endblock%}
         {%block signout%} <a class="signout" href="/sign_out"><b>Sign Out</b></a> {%endblock%}
     {%block content%}
-        <h2>
-            Hi {{username}} 
-        </h2>
         <div class="center">
+            <h2>
+                Hi {{username}} 
+            </h2>
         <h4 style=" margin-top:15px;">Please insert playlist URL</h4>
-            <form class="url" action="post_playlist_url" method="POST">
-                <input style="margin:5px; width:500px"name="playlist_url_textbox">
-                <input class="submit" type="submit" onclick="$('#loading').show();">
+            <form class="url" action="/post_playlist_url" method="post">
+                <input style="margin:5px; width:500px" name="playlist_url_textbox" type="url" id="playlist_url" required>
+                <span id="playlist_url_error" class="text-danger"></span>
+                <input class="submit" type="submit" value="submit">
             </form>
         </div>
     {%endblock%}

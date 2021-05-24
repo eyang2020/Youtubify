@@ -11,8 +11,50 @@
                 color:white;
                 text-align:center;
     }
+    .progress-bar{
+        margin-left:auto;
+        margin-right:auto;
+        background:white;
+        position:relative;
+        width:500px;
+        height:40px;
+        border-radius:13px;
+    }
+    .progress-bar-value{
+        position:absolute;
+        display:flex;
+        justify-content:center;
+        height:100%;
+        width:100%;
+        color:black;
+        font-size: 2em;
+        font-weight:400;
+        margin-bottom:15px;
+    }
+    .progress-bar-fill{
+        width:25%;
+        height:100%;
+        background: #1DB954;
+        border-radius:13px;
+    }
 </style>
     {%endblock%}
+    {%block script%}
+    {%endblock%}
     {%block content%}
-        <h2 style="margin-top:30px">Converting your playlist, please wait...</h2>
+        <h2 id="note" style="margin-top:30px">Converting your playlist, please wait...</h2>
+        <div class="progress-bar">
+        <div class="progress-bar-value">25%</div>
+        <div class="progress-bar-fill"></div>
+        </div>  
+        <script>
+            let progres;
+            const progressWidth = document.querySelector(".progress-bar-fill");
+            const progressText = document.querySelector(".progress-bar-value");
+
+            progress = "30%";
+
+            progressWidth.style.width = progress;
+            progressText.textContent = progress;
+        </script>
     {%endblock%}

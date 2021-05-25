@@ -1,5 +1,4 @@
 import os
-import bs4
 from flask import Flask, session, request, redirect, render_template, url_for, flash
 from flask_session import Session
 from flask_executor import Executor

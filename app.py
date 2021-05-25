@@ -1,5 +1,6 @@
 import os
-from flask import Flask, session, request, redirect, render_template, url_for
+import bs4
+from flask import Flask, session, request, redirect, render_template, url_for, flash
 from flask_session import Session
 from flask_executor import Executor
 import spotipy
@@ -69,11 +70,16 @@ def getYouTubePlaylistUrl():
         return render_template('loading.html')
 
     # POST request
-    ytPlaylistUrl = request.form['playlist_url_textbox']
-    ytPlaylistId = ytPlaylistUrl.split('list=')[1]
-    executor.submit(run, ytPlaylistId, sp)
-    # send GET request to render loading.html
-    return redirect(url_for('getYouTubePlaylistUrl'))
+    if request.method == 'POST':
+        ytPlaylistUrl = request.form['playlist_url_textbox']
+        try:
+            ytPlaylistId = ytPlaylistUrl.split('list=')[1]
+            executor.submit(run, ytPlaylistId, sp)
+        except:
+            flash("Please insert Valid Youtube Playlist URL", "warning")
+            return redirect(url_for('index'))
+        # send GET request to render loading.html
+        return redirect(url_for('getYouTubePlaylistUrl'))
 
 if __name__ == '__main__':
     app.run(threaded=True, debug=True, host="0.0.0.0", port=5000)

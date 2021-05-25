@@ -25,7 +25,7 @@
         align-items:center;
         justify-content: center;
         }
-       button{ 
+       .signin{ 
 
   box-sizing: border-box;
   -webkit-appearance: none;
@@ -47,18 +47,17 @@
   line-height: 1;
   margin: 20px;
   padding: 1.2em 2.8em;
-}
-button:hover, button:focus {
-  color: #fff;
-  outline: 0;
-}
-.signin {
   border-color: #1DB954;
   color: #fff;
   box-shadow: 0 0 40px 40px #1DB954 inset, 0 0 0 0 #1DB954;
   -webkit-transition: all 150ms ease-in-out;
   transition: all 150ms ease-in-out;
+} 
+.signin:focus {
+  color: #fff;
+  outline: 0;
 }
+
 .signin:hover {
   box-shadow: 0 0 10px 0 #1DB954 inset, 0 0 10px 4px #1DB954;
 }
@@ -72,11 +71,9 @@ button:hover, button:focus {
     </div>
     <div class = "bottom">
         <h2 style="color:#1DB954;">Transfer Your Favorite Playlists</h2>
-        
-        <button class="signin"><a href="{{auth_url}}" style="text-decoration: none;
+        <a href="{{auth_url}}" class="signin" style="text-decoration: none;
             font-family: 'Montserrat', sans-serif;
-            font-weight: 700; color: #fff;">Sign In</a></button>
-
+            font-weight: 700; color: #fff;">Sign In</a>
     </div>
     {%endblock%}
 

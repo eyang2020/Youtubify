@@ -35,7 +35,9 @@
         
         .center{
             margin-top:15%;
-
+        }
+        h3{
+            margin-top:1.5em;
         }
 
         
@@ -55,5 +57,14 @@
                 <input class="submit" type="submit" value="submit">
             </form>
         </div>
+
+        {%with messages = get_flashed_messages()%}
+            {%if messages %}
+                {%for msg in messages%}
+                <h3>{{msg}}</h3>
+                {%endfor%}
+            {%endif%}
+        {%endwith%}
+
     {%endblock%}
 

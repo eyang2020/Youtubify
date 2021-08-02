@@ -4,8 +4,8 @@ Youtibify is a web app for converting a YouTube playlist into a Spotify playlist
 
 ## Usage
 
-1. Given a link to a nonprivate YouTube playlist, Youtubify will return a link to a Spotify playlist.
-2. Given a link to a nonprivate YouTube playlist, the user will sign into his or her personal Spotify account on Youtubify. A new Spotify playlist will be created on the account.
+* Given a link to a nonprivate YouTube playlist, Youtubify will return a link to a Spotify playlist.
+* Given a link to a nonprivate YouTube playlist, the user will sign into his or her personal Spotify account on Youtubify. A new Spotify playlist will be created on the account.
 
 ## Tools
 Python \
